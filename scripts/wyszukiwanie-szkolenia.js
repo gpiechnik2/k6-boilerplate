@@ -2,7 +2,7 @@ import { sleep, group, check } from 'k6'
 import { parseHTML } from 'k6/html'
 import { Counter } from 'k6/metrics'
 import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js'
-import { Httpx } from 'https://jslib.k6.io/httpx/0.1.0/index.js'
+import { Httpx } from '../utils/httpx.js'
 import { assert, getEmbededResources } from '../utils/helper.js'
 
 
@@ -26,34 +26,38 @@ const session = new Httpx({
 })
 
 export default function main() {
+  let name
   let response
   let status
 
   group('Użytkownik przechodzi na stronę główną', function () {
+    name = 'GET /'
     response = session.get('/')
     status = check(response, {
       'status is 200': (r) => r.status === 200,
       'title is proper': (r) => r.body.includes('Rozwiązania i usługi IT, inżynierii i BPO - Sii Polska')
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
     sleep(randomIntBetween(3, 10))
   })
 
   group('Użytkownik przechodzi do sekcji "Szkolenia"', function () {
+    name = 'GET /szkolenia/'
     response = session.get('/szkolenia/')
     status = check(response, {
       'status is 200': (r) => r.status === 200,
       'body includes proper title': (r) => r.body.includes('Szkolenia | Sii Polska')
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
     sleep(randomIntBetween(3, 10))
   })
 
   let trainingName
   let trainingHref
   group('Użytkownik przechodzi do wyszukiwarki szkoleń', function () {
+    name = 'GET /szkolenia/wyszukiwarka-szkolen/'
     response = session.get('/szkolenia/wyszukiwarka-szkolen/')
     status = check(response, {
       'status is 200': (r) => r.status === 200,
@@ -62,17 +66,18 @@ export default function main() {
     trainingName = parseHTML(response.body).find('h3.sii-o-training-box__title').first().text()
     trainingHref = parseHTML(response.body).find('a.sii-a-icon-button.-invert').first().attr('href')
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
     sleep(randomIntBetween(3, 10))
   })
 
   group('Użytkownik wyszukuje szkolenie o nazwie "[trainingName]"', function () {
+    name = 'GET [trainingHref]'
     response = session.get(trainingHref)
     status = check(response, {
       'status is 200': (r) => r.status === 200,
       'body includes proper title': (r) => r.body.includes(trainingName)
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
   })
 }

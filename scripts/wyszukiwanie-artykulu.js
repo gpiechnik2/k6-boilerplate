@@ -3,7 +3,7 @@ import { parseHTML } from 'k6/html'
 import { Counter } from 'k6/metrics'
 import http from 'k6/http'
 import { randomIntBetween, randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js'
-import { Httpx } from 'https://jslib.k6.io/httpx/0.1.0/index.js'
+import { Httpx } from '../utils/httpx.js'
 import { assert, getEmbededResources } from '../utils/helper.js'
 
 
@@ -35,17 +35,19 @@ const session = new Httpx({
 })
 
 export default function main() {
+  let name
   let response
   let status
 
   group('Użytkownik przechodzi na stronę główną', function () {
+    name = 'GET /'
     response = session.get('/')
     status = check(response, {
       'status is 200': (r) => r.status === 200,
       'title is proper': (r) => r.body.includes('Rozwiązania i usługi IT, inżynierii i BPO - Sii Polska')
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
     sleep(randomIntBetween(3, 10))
   })
 
@@ -53,6 +55,7 @@ export default function main() {
   let articleHref
   group('Użytkownik wyszukuje jeden z 5 zdefiniowanych wcześniej artykułów', function () {
     articleName = randomItem(ARTICLES)
+    name = 'GET /wyszukiwarka/all/[articleName]'
     response = session.get(`/wyszukiwarka/all/${articleName}`)
     articleHref = parseHTML(response.body)
       .find('h3.sii-m-card-item-simple__content__title')
@@ -65,17 +68,18 @@ export default function main() {
       'body includes article': (r) => r.body.includes(articleName)
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
     sleep(randomIntBetween(3, 10))
   })
 
   group('Użytkownik klika w wyszukany artykuł', function () {
+    name = 'GET [articleHref]'
     response = http.get(`${articleHref}`)
     status = check(response, {
       'status is 200': (r) => r.status === 200,
       'body includes articleName': (r) => r.body.includes(articleName)
     })
     getEmbededResources(response.body)
-    assert(status)
+		assert(response, status, errors, name)
   })
 }
