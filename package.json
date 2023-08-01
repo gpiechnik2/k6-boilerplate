@@ -1,0 +1,23 @@
+{
+  "name": "k6-boilerplate",
+  "version": "1.0.0",
+  "description": "Wydaność pod kontrolą z k6",
+  "main": "index.js",
+  "scripts": {
+    "lint:check": "npx eslint scripts/*",
+    "lint": "npx eslint scripts/* --fix",
+    "format:check": "npx prettier --check scripts",
+    "format": "npx prettier --write scripts",
+    "wyszukiwanie-artykulu:smoke": "k6 run --config configs/smoke.json scripts/wyszukiwanie-artykulu.js",
+    "wyszukiwanie-artykulu:load": "k6 run --config configs/load.json scripts/wyszukiwanie-artykulu.js",
+    "wyszukiwanie-szkolenia:smoke": "k6 run --config configs/smoke.json scripts/wyszukiwanie-szkolenia.js",
+    "wyszukiwanie-szkolenia:load": "k6 run --config configs/load.json scripts/wyszukiwanie-szkolenia.js"
+  },
+  "author": "Grzegorz Piechnik @SiiPoland",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "k6": "^0.0.0",
+    "prettier": "^3.0.0"
+  }
+}

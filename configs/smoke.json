@@ -1,0 +1,9 @@
+{
+  "scenarios": {
+    "smoke": {
+      "executor": "per-vu-iterations",
+        "vus": 1,
+        "iterations": 1
+    }
+  }
+}
